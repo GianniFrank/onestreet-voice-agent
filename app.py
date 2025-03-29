@@ -92,9 +92,9 @@ def webhook():
         title = args.get("prodotto")
         size = args.get("taglia")
         response_text = check_product_availability(title, size)
-        return jsonify({"response": response_text})
+        return jsonify({"response": response_text}), 200, {'Content-Type': 'application/json'}
 
-    return jsonify({"response": "Funzione non riconosciuta."})
+    return jsonify({"response": "Funzione non riconosciuta."}), 200, {'Content-Type': 'application/json'}
 
 
 @app.route("/")
