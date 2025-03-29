@@ -1,11 +1,12 @@
 from flask import Flask, request, jsonify
 import requests
 import os
+import json
 
 app = Flask(__name__)
 
-SHOPIFY_STORE = os.getenv("SHOPIFY_STORE")  # es: onestreet.myshopify.com
-SHOPIFY_TOKEN = os.getenv("SHOPIFY_TOKEN")  # es: shpat_xxxxxx
+SHOPIFY_STORE = os.getenv("SHOPIFY_STORE")
+SHOPIFY_TOKEN = os.getenv("SHOPIFY_TOKEN")
 
 HEADERS = {
     "Content-Type": "application/json",
@@ -14,6 +15,8 @@ HEADERS = {
 
 
 def check_product_availability(title, size):
+    print(f"🛠 Richiesta ricevuta per: {title}, taglia: {size}")
+
     url = f"https://{SHOPIFY_STORE}/admin/api/2024-01/graphql.json"
 
     query = """
@@ -37,24 +40,27 @@ def check_product_availability(title, size):
     }
     """
 
-    variables = {
-        "title": title
-    }
+    variables = {"title": title}
+    payload = {"query": query, "variables": variables}
 
-    payload = {
-        "query": query,
-        "variables": variables
-    }
-
-    response = requests.post(url, json=payload, headers=HEADERS)
+    try:
+        response = requests.post(url, json=payload, headers=HEADERS)
+    except Exception as e:
+        print("❌ Errore nella chiamata a Shopify:", str(e))
+        return "Si è verificato un errore tecnico interrogando Shopify."
 
     print("🔍 Shopify GraphQL status:", response.status_code)
-    print("📦 Shopify GraphQL response:", response.text)
 
     if response.status_code != 200:
+        print("⚠️ Risposta non valida:", response.text)
         return "Errore durante la richiesta a Shopify."
 
-    data = response.json()
+    try:
+        data = response.json()
+        print("📦 Shopify GraphQL response:", json.dumps(data, indent=2))
+    except Exception as e:
+        print("❌ Errore nel parsing JSON:", str(e))
+        return "Errore nella lettura della risposta di Shopify."
 
     try:
         variants = data["data"]["products"]["edges"][0]["node"]["variants"]["edges"]
@@ -79,6 +85,8 @@ def webhook():
     data = request.get_json()
     function = data.get("function")
     args = data.get("arguments", {})
+
+    print("📥 Payload ricevuto:", data)
 
     if function == "check_product_availability":
         title = args.get("prodotto")
