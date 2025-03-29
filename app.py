@@ -4,13 +4,12 @@ import os
 
 app = Flask(__name__)
 
-SHOPIFY_API_KEY = os.getenv("SHOPIFY_API_KEY")
-SHOPIFY_PASSWORD = os.getenv("SHOPIFY_PASSWORD")
-SHOPIFY_STORE = os.getenv("SHOPIFY_STORE")  # es: onestreet.myshopify.com
+SHOPIFY_STORE = os.getenv("SHOPIFY_STORE")  # es. onestreet.myshopify.com
+SHOPIFY_TOKEN = os.getenv("SHOPIFY_TOKEN")  # es. shpat_d54f...
 
 HEADERS = {
     "Content-Type": "application/json",
-    "X-Shopify-Access-Token": SHOPIFY_PASSWORD
+    "X-Shopify-Access-Token": SHOPIFY_TOKEN
 }
 
 def check_product_availability(title, size):
